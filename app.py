@@ -87,9 +87,5 @@ def getTranslation():
             chat = {'text': reply}
             return jsonify(chat)
 
-@app.route("/")
-def hompage():
-    return "<p>Homepage</p>"
-
 if __name__ == "__main__":
     app.run(debug=True)
