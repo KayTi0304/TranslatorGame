@@ -56,36 +56,62 @@ class Chatbot:
 
         return decoded_message
     
+@app.route('/get-translation-prompt', methods=['GET', 'POST'])
+def getTranslationPrompt():
+    if request.method == 'POST':
+        translator = Translator()
+        data = request.get_json()
+        textE = data.get('text')
+        language = data.get('language')
+        translated = translator.translate(text=textE, dest=language)
+        print(translated)
+        chat = {'text': translated.text}
+        return jsonify(chat)
+
+
+@app.route('/get-translation-language', methods=['GET', 'POST'])
+def getTranslationLanguage():
+    if request.method == 'POST':
+        translator = Translator()
+        data = request.get_json()
+        textE = data.get('text')
+        srcLn = data.get('srcLn')
+        destLn = data.get('destLn')
+        translated = translator.translate(text=textE, src=srcLn, dest=destLn)
+        print(translated)
+        chat = {'text': translated.text}
+        return jsonify(chat)
+    
 @app.route('/get-translation', methods=['GET', 'POST'])
 def getTranslation():
-    chatbotCH = Chatbot()
-    chatbotEN = Chatbot()
     if request.method == 'POST':
         data = request.get_json()
         textE = data.get('text')
         language = data.get('language')
 
         translator = Translator()
-
-        print("text: ", textE)
-
-        if language == 'CH':
-            # 1. translate chinese into english
-            translated = translator.translate(text=textE, dest='en')
-            print(translated.text)
-            # 2. get a response from chatbot
-            reply = chatbotCH.get_reply(translated.text)
-            # 3. Translate response to chinese
-            reply2 = translator.translate(text=reply, dest='zh-cn')
-            # 4. send data
-            chat = {'text': reply2.text}
-            return jsonify(chat)
         
-        if language == 'EN':
+        chatbotCH = Chatbot()
+        chatbotEN = Chatbot()
+
+        if language == 'en':
             # 1. get a response from chatbot
             reply = chatbotEN.get_reply(textE)
             chat = {'text': reply}
             return jsonify(chat)
+
+        else:
+            # 1. translate desired language into en for chatbot
+            translated = translator.translate(text=textE, dest='en')
+            print(translated.text)
+            # 2. get a response from chatbot
+            reply = chatbotCH.get_reply(translated.text)
+            # 3. Translate response to desired language
+            reply2 = translator.translate(text=reply, dest=language)
+            # 4. send data
+            chat = {'text': reply2.text}
+            return jsonify(chat)
+            
 
 @app.route('/')
 def hello_world():
